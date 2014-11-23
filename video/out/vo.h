@@ -170,6 +170,12 @@ struct vo_extra {
     struct mpv_opengl_cb_context *opengl_cb_context;
 };
 
+struct vo_image_timing {
+    int64_t pts;
+    int64_t prev_vsync;
+    int64_t next_vsync;
+};
+
 struct vo_driver {
     // Encoding functionality, which can be invoked via --o only.
     bool encode;
@@ -216,6 +222,12 @@ struct vo_driver {
      * This also should draw the OSD.
      */
     void (*draw_image)(struct vo *vo, struct mp_image *mpi);
+
+    /* Like draw image, but is called before every vsync with timing
+     * information
+     */
+    void (*draw_image_timed)(struct vo *vo, struct mp_image *mpi,
+                             struct vo_image_timing *t);
 
     /*
      * Blit/Flip buffer to the screen. Must be called after each frame!
