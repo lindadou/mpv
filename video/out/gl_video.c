@@ -1259,7 +1259,6 @@ static void compile_shaders(struct gl_video *p)
         header_inter = t_concat(tmp, header, header_inter);
         p->inter_program =
             create_program(p, "inter", header_inter, vertex_shader, s_video);
-        MP_ERR(p, "inter shader compiled\n");
     }
 
     header_final = t_concat(tmp, header, header_final);
