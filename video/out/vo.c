@@ -540,6 +540,12 @@ static int64_t prev_sync(struct vo *vo, int64_t ts)
     return ts - offset;
 }
 
+static int64_t sub_interval_delta(struct vo *vo, int64_t ts)
+{
+    struct vo_internal *in = vo->in;
+    return ts - MPMIN(in->vsync_interval / 3, 4e3);
+}
+
 static bool render_frame(struct vo *vo)
 {
     struct vo_internal *in = vo->in;
@@ -553,6 +559,11 @@ static bool render_frame(struct vo *vo)
     struct mp_image *img = in->frame_queued;
 
     if (!img && (!in->vsync_timed || in->paused || pts <= 0)) {
+        pthread_mutex_unlock(&in->lock);
+        return false;
+    }
+
+    if (in->vsync_timed && !in->hasframe) {
         pthread_mutex_unlock(&in->lock);
         return false;
     }
@@ -609,7 +620,7 @@ static bool render_frame(struct vo *vo)
 
         int64_t target = pts - in->flip_queue_offset;
         if (in->vsync_timed)
-            target = next_vsync - MPMIN(in->vsync_interval / 3, 4e3);
+            target = sub_interval_delta(vo, next_vsync);
         while (1) {
             int64_t now = mp_time_us();
             if (target <= now)
@@ -639,6 +650,12 @@ static bool render_frame(struct vo *vo)
 
         pthread_mutex_lock(&in->lock);
         in->dropped_frame = drop;
+
+        if (in->vsync_timed) {
+            prev_vsync = prev_sync(vo, mp_time_us());
+            next_vsync = prev_vsync + in->vsync_interval;
+            in->wakeup_pts = sub_interval_delta(vo, next_vsync);
+        }
     }
 
     if (in->dropped_frame)
