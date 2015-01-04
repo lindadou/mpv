@@ -568,6 +568,7 @@ static bool render_frame(struct vo *vo)
         return false;
     }
 
+    bool new_image = !!img;
     mp_image_unrefp(&in->dropped_image);
 
     in->rendering = true;
@@ -658,7 +659,7 @@ static bool render_frame(struct vo *vo)
         }
     }
 
-    if (in->dropped_frame)
+    if (in->dropped_frame && (!in->vsync_timed || new_image))
         in->drop_count += 1;
 
     vo->want_redraw = false;
