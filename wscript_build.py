@@ -528,15 +528,15 @@ def build(ctx):
             ( "cocoa/cocoabasic.m", "cocoa" ),
         ]
 
-        # Create a "local" include dir, so we can build the examples without
-        # installing the headers.
+        # # Create a "local" include dir, so we can build the examples without
+        # # installing the headers.
         incdir = os.path.join(ctx.bldnode.abspath(), "include")
-        ctx(
-            rule   = "mkdir -p {1} && ln -s {0} {1}/mpv".format(
-                        os.path.join(ctx.srcnode.abspath(), "libmpv"), incdir),
-            before = ("c",),
-            name = "incdir",
-        )
+        # ctx(
+        #     rule   = "mkdir -p {1} && ln -s {0} {1}/mpv".format(
+        #                 os.path.join(ctx.srcnode.abspath(), "libmpv"), incdir),
+        #     before = ("c",),
+        #     name = "incdir",
+        # )
 
         for source in ctx.filtered_sources(examples_sources):
             ctx(
